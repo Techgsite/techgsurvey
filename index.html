@@ -27,7 +27,7 @@
       </nav>
       <div class="nav-cta">
         <a class="btn ghost" href="#signup">Sign Up</a>
-  <a class="btn primary" href="login.html">Log In</a>
+        <a class="btn primary" href="login.html">Log In</a>
         <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
       </div>
     </div>
@@ -46,7 +46,6 @@
         <div class="hero-card" role="img" aria-label="Card showing example rewards">
           <h2 style="margin:0 0 6px; color: #0cbad1; font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;">Popular rewards</h2>
           <p class="section-desc" style="margin:0 0 12px">Redeem as low as <b>₦1,000</b> or <b>$1</b>.</p>
-          
         </div>
       </div>
     </section>
@@ -85,7 +84,6 @@
             </div>
           <div class="offer">
             <div>
-
               <div class="offer-title">Watch 5 short videos</div>
               <div class="section-desc">15 minutes • 100 pts = 50 Naira</div>
             </div>
@@ -144,7 +142,6 @@
           <summary>How long it takes to Cashout?</summary>
           <p>Most Cashouts are reviewed within 24 hours.</p>
         </details>
-        
       </div>
     </section>
     <div class="container foot-grid">
@@ -182,7 +179,7 @@
                         <input type="checkbox" required />
                         <span>I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</span>
                       </label>
-                      <button class="btn primary" type="submit">Sign up & claim 500 pts</button> 
+                      <button class="btn primary" type="submit">Sign up & claim 500 pts</button>
                       <p id="formMsg" class="section-desc" role="status" aria-live="polite" style="margin-top:10px"></p>
                     </form>
                     <div style="margin:24px 0 0 0; border-top:1px solid rgba(255,255,255,.08); padding-top:18px;">
@@ -206,7 +203,7 @@
     </div>
   </footer>
 
-  <div class="toast" id="toast" role="alert" aria-live="assertive">Signed up! Google login/signup successful.</div>
+  <div class="toast" id="toast" role="alert" aria-live="assertive">Signed up! (Demo) Google login/signup successful.</div>
 
   <script>
     // Mobile nav
@@ -439,48 +436,7 @@ document.getElementById('forgotForm').onsubmit = function(e) {
   document.getElementById('forgotMsg').textContent = 'A reset link would be sent to your email (demo).';
 };
 
-// 1. Move Google script to after callback definition (at end of file)
-// 2. Add Forgot Password modal logic (to LOGIN.HTML, but here is the code to add):
-// Add this HTML where login form is:
-// <a href="#" id="forgotPasswordLink" style="color:var(--brand);margin-top:10px;display:inline-block;">Forgot password?</a>
-// <div id="forgotPasswordModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:9999;">
-//   <div style="background:#fff;padding:30px 20px;border-radius:10px;max-width:400px;width:100%;text-align:left;position:relative;">
-//     <span id="closeForgotModal" style="position:absolute;top:10px;right:15px;cursor:pointer;font-size:22px;">&times;</span>
-//     <h2>Reset Password</h2>
-//     <form id="forgotForm">
-//       <label>Email<br><input type="email" name="forgotEmail" required style="width:100%;margin-bottom:10px;"></label><br>
-//       <button type="submit" class="btn primary">Send Reset Link</button>
-//     </form>
-//     <p id="forgotMsg" style="color:#c00e0e;margin-top:10px;"></p>
-//   </div>
-// </div>
-// Add this JS after login form logic:
-document.getElementById('forgotPasswordLink').onclick = function(e) {
-  e.preventDefault();
-  document.getElementById('forgotPasswordModal').style.display = 'flex';
-};
-document.getElementById('closeForgotModal').onclick = function() {
-  document.getElementById('forgotPasswordModal').style.display = 'none';
-};
-document.getElementById('forgotForm').onsubmit = function(e) {
-  e.preventDefault();
-  const email = this.forgotEmail.value.trim();
-  let users = getUsers();
-  if(!users.some(u => u.email === email)) {
-    document.getElementById('forgotMsg').textContent = 'No user found with this email.';
-    return;
-  }
-  // Demo: Show message (real email requires backend)
-  document.getElementById('forgotMsg').textContent = 'A reset link would be sent to your email .';
-};
-// 3. Email verification for signup/forgot password :
-// On signup, after user submits, show a message: 'A verification email would be sent to your email (demo)'.
-// 4. Survey 24h lockout is already enforced in taskpage.html using localStorage timestamp per user.
   </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
-
 </html>
-
-
-
