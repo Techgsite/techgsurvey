@@ -104,7 +104,7 @@ if(form){
       return;
     }
     setCurrentUser(user);
-    window.location.href = 'TASKPAGE.HTML';
+    window.location.href = 'taskpage.html';
   });
 }
 
@@ -136,7 +136,7 @@ function handleCredentialResponse(response) {
     localStorage.setItem('techg_users', JSON.stringify(users));
     setCurrentUser(user);
   }
-  window.location.href = 'TASKPAGE.HTML';
+  window.location.href = 'taskpage.html';
 }
 // Mobile nav
 const menuBtn = document.getElementById('menuToggle');
@@ -167,4 +167,5 @@ document.getElementById('forgotForm').onsubmit = async function(e) {
   </script>
 </body>
 </html>
+
 
