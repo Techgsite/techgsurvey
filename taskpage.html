@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7088804727653988"
+     crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7088804727653988"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="profile">
+      <img src="https://via.placeholder.com/80" alt="Profile">
+      <h3 id="username">John Doe</h3>
+  <button id="logoutBtn" class="save-btn" style="margin-top:10px;width:100%;" onclick="location.href='index.html'">Logout</button>
+    </div>
+    <div class="menu">
+      <button class="tab-btn active" data-tab="survey">📋 Survey</button>
+      <button class="tab-btn" data-tab="videos">🎬 Watch Video</button>
+      <button class="tab-btn" data-tab="points">⭐ Earned Points</button>
+      <button class="tab-btn" data-tab="daily">🎁 Daily Reward</button>
+      <button class="tab-btn" data-tab="withdraw">💳 Withdraw</button>
+      <button class="tab-btn" data-tab="account">⚙️ Account Profile</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <!-- Live Cashout Ticker -->
+    <div class="ticker">
+      <p id="cashoutText">Loading cashouts...</p>
+    </div>
+
+    <div id="survey" class="tab-content active">
+      <div class="card">
+        <h2>Available Surveys</h2>
+        <ul>
+          <li>SURVEY 1 (20 questions) - <b>100 pts</b> <button class="save-btn" onclick="showSurveyModal()">Start</button></li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="videos" class="tab-content">
+      <div class="card">
+        <h2>Watch Videos</h2>
+        <p>Earn points by watching videos here.</p>
+      </div>
+    </div>
+
+    <div id="points" class="tab-content">
+      <div class="card">
+        <h2>Your Points</h2>
+        <p><strong id="pointsValue">0</strong> points</p>
+      </div>
+    </div>
+
+    <div id="daily" class="tab-content">
+      <div class="card">
+        <h2>Daily Reward</h2>
+        <p>Claim your daily <strong>+50 points</strong> reward.</p>
+        <button class="save-btn" onclick="claimReward()">Claim Reward</button>
+      </div>
+    </div>
+
+    <div id="withdraw" class="tab-content">
+      <div class="card">
+        <h2>Withdraw</h2>
+        <p>Minimum withdrawal: 10,000 points.</p>
+        <div id="withdrawalBtn" style="margin:20px 0;"></div>
+      </div>
+    </div>
+
+    <div id="account" class="tab-content">
+      <div class="card">
+        <h2>Account Settings</h2>
+        <label>Change Username</label>
+        <input type="text" id="newUsername" placeholder="Enter new username">
+        <label>Change Password</label>
+        <input type="password" placeholder="Enter new password">
+        <button class="save-btn" onclick="updateUsername()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load user data from localStorage
+function loadUser() {
+  const user = JSON.parse(localStorage.getItem('techg_currentUser'));
+  if(user) {
+    document.getElementById('username').innerText = user.username || 'User';
+    document.getElementById('pointsValue').innerText = user.points || 0;
+    document.getElementById('newUsername').value = user.username || '';
+    // Show profile photo if exists
+    const img = document.querySelector('.profile img');
+    if(user.photo) {
+      img.src = user.photo;
+    } else {
+      img.src = 'https://via.placeholder.com/80';
+    }
+  }
+}
+loadUser();
+
+    // Logout button logic
+if (document.getElementById('logoutBtn')) {
+  document.getElementById('logoutBtn').onclick = function() {
+    localStorage.removeItem('techg_currentUser');
+  window.location.href = 'index.html';
+  };
+}
+
+// Tab switching logic
+const tabBtns = document.querySelectorAll(".tab-btn");
+const tabContents = document.querySelectorAll(".tab-content");
+tabBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    tabBtns.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const tabId = btn.getAttribute("data-tab");
+    tabContents.forEach(content => {
+      content.classList.remove("active");
+      if(content.id === tabId) content.classList.add("active");
+    });
+  });
+});
+
+    // Ensure first tab is active on load
+if(document.querySelector('.tab-btn[data-tab="survey"]')) {
+  document.querySelector('.tab-btn[data-tab="survey"]').classList.add('active');
+}
+if(document.getElementById('survey')) {
+  document.getElementById('survey').classList.add('active');
+}
+
+    // Update username logic
+    function updateUsername() {
+      const newName = document.getElementById("newUsername").value;
+      if(newName.trim() !== "") {
+        document.getElementById("username").innerText = newName;
+        // Update in localStorage for current user and users array
+        let user = JSON.parse(localStorage.getItem('techg_currentUser')) || {};
+        user.username = newName;
+        localStorage.setItem('techg_currentUser', JSON.stringify(user));
+        let users = JSON.parse(localStorage.getItem('techg_users') || '[]');
+        users = users.map(u => u.email === user.email ? user : u);
+        localStorage.setItem('techg_users', JSON.stringify(users));
+        alert("Username updated!");
+      }
+    }
+
+    // Points + Daily Reward
+    let claimedToday = false;
+    function claimReward() {
+  let user = JSON.parse(localStorage.getItem('techg_currentUser')) || { points: 0 };
+  if (!user.email) {
+    alert("Login required.");
+    return;
+  }
+  const lastClaim = localStorage.getItem('techg_lastDaily_' + user.email);
+  const now = Date.now();
+
+  if (lastClaim && now - parseInt(lastClaim, 10) < 24 * 60 * 60 * 1000) {
+    alert("You already claimed today's reward! Come back in 24 hours.");
+    return;
+  }
+
+  user.points = (user.points || 0) + 50;
+  document.getElementById("pointsValue").innerText = user.points;
+
+  // Save to current user and global users list
+  localStorage.setItem('techg_currentUser', JSON.stringify(user));
+  let users = JSON.parse(localStorage.getItem('techg_users') || '[]');
+  users = users.map(u => u.email === user.email ? user : u);
+  localStorage.setItem('techg_users', JSON.stringify(users));
+
+  // Save last claim timestamp
+  localStorage.setItem('techg_lastDaily_' + user.email, now.toString());
+
+  alert("Daily reward claimed! +50 points");
+}
+
+    // Random Cashout Ticker
+    const users = ["Alice", "Bob", "David", "Mary", "John", "Aisha", "Samuel", "Grace"];
+    const cashouts = ["$5", "$10", "$20", "$15", "$8", "$12", "$25", "$30"];
+
+    function generateCashouts() {
+      let text = "";
+      for (let i = 0; i < 20; i++) {
+        const user = users[Math.floor(Math.random() * users.length)];
+        const amount = cashouts[Math.floor(Math.random() * cashouts.length)];
+        text += `${user} just cashed out ${amount} • `;
+      }
+      document.getElementById("cashoutText").innerText = text;
+    }
+
+    generateCashouts();
+    setInterval(generateCashouts, 30000); // refresh every 30s
+
+    // --- Random Surveys and Videos Logic with 24hr Limit ---
+const SURVEY_LIMIT = 5;
+const VIDEO_LIMIT = 5;
+const SURVEY_POINTS = 100;
+const VIDEO_POINTS = 20;
+const SURVEY_KEY = 'techg_surveyCount_';
+const VIDEO_KEY = 'techg_videoCount_';
+const SURVEY_TIME_KEY = 'techg_surveyTime_';
+const VIDEO_TIME_KEY = 'techg_videoTime_';
+
+const surveys = [
+  { title: 'Tech Habits Survey', duration: '10 min' },
+  { title: 'Shopping Preferences', duration: '10 min' },
+  { title: 'Mobile Usage Trends', duration: '10 min' },
+  { title: 'Food & Nutrition', duration: '10 min' },
+  { title: 'Travel Experience', duration: '10 min' }
+];
+const videos = [
+  { title: 'Watch: How to Save Money' },
+  { title: 'Watch: Tech Innovations' },
+  { title: 'Watch: Fitness at Home' },
+  { title: 'Watch: Cooking Tips' },
+  { title: 'Watch: Travel Vlog' }
+];
+function getUserEmail() {
+  const user = JSON.parse(localStorage.getItem('techg_currentUser'));
+  return user ? user.email : '';
+}
+function getCount(key, email) {
+  const timeKey = key === SURVEY_KEY ? SURVEY_TIME_KEY : VIDEO_TIME_KEY;
+  const lastTime = parseInt(localStorage.getItem(timeKey + email) || '0', 10);
+  const now = Date.now();
+  if (now - lastTime > 24 * 60 * 60 * 1000) {
+    localStorage.setItem(key + email, '0');
+    localStorage.setItem(timeKey + email, now.toString());
+    return 0;
+  }
+  return parseInt(localStorage.getItem(key + email) || '0', 10);
+}
+function incrementCount(key, email) {
+  const count = getCount(key, email) + 1;
+  localStorage.setItem(key + email, count.toString());
+  if (count === 1) localStorage.setItem((key === SURVEY_KEY ? SURVEY_TIME_KEY : VIDEO_TIME_KEY) + email, Date.now().toString());
+}
+function renderTasks() {
+  const email = getUserEmail();
+  const surveyCount = getCount(SURVEY_KEY, email);
+  const videoCount = getCount(VIDEO_KEY, email);
+  // Render surveys
+  let surveyHtml = '';
+  if (surveyCount < SURVEY_LIMIT) {
+    surveyHtml = `<li>SURVEY 1 (20 questions) - <b>${SURVEY_POINTS} pts</b> <button class="save-btn" onclick="showSurveyModal()">Start</button></li>`;
+  } else {
+    surveyHtml = '<li>You have completed all surveys for today. Come back in 24 hours.</li>';
+  }
+  document.getElementById('survey').innerHTML = `<div class="card"><h2>Available Surveys</h2><ul>${surveyHtml}</ul></div>`;
+  // Render videos
+  let videoHtml = '';
+  if (videoCount < VIDEO_LIMIT) {
+    videoHtml = videos.slice(0, VIDEO_LIMIT - videoCount).map((v, i) =>
+      `<li>${v.title} - <b>${VIDEO_POINTS} pts</b> <button class="save-btn" onclick="completeVideo(${i})">Watch</button></li>`
+    ).join('');
+  } else {
+    videoHtml = '<li>You have watched all videos for today. Come back in 24 hours.</li>';
+  }
+  document.getElementById('videos').innerHTML = `<div class="card"><h2>Watch Videos</h2><ul>${videoHtml}</ul></div>`;
+}
+window.completeSurvey = function(idx) {
+  const email = getUserEmail();
+  let count = getCount(SURVEY_KEY, email);
+  if (count >= SURVEY_LIMIT) {
+    alert('You have completed all surveys for today.');
+    return;
+  }
+  let user = JSON.parse(localStorage.getItem('techg_currentUser'));
+  user.points = (user.points || 0) + SURVEY_POINTS;
+  localStorage.setItem('techg_currentUser', JSON.stringify(user));
+  // Also update in users array
+  let users = JSON.parse(localStorage.getItem('techg_users') || '[]');
+  users = users.map(u => u.email === user.email ? user : u);
+  localStorage.setItem('techg_users', JSON.stringify(users));
+  document.getElementById('pointsValue').innerText = user.points;
+  incrementCount(SURVEY_KEY, email);
+  alert(`Survey completed! +${SURVEY_POINTS} points`);
+  renderTasks();
+}
+window.completeVideo = function(idx) {
+  const email = getUserEmail();
+  let count = getCount(VIDEO_KEY, email);
+  if (count >= VIDEO_LIMIT) {
+    alert('You have watched all videos for today.');
+    return;
+  }
+  let user = JSON.parse(localStorage.getItem('techg_currentUser'));
+  user.points = (user.points || 0) + VIDEO_POINTS;
+  localStorage.setItem('techg_currentUser', JSON.stringify(user));
+  // Also update in users array
+  let users = JSON.parse(localStorage.getItem('techg_users') || '[]');
+  users = users.map(u => u.email === user.email ? user : u);
+  localStorage.setItem('techg_users', JSON.stringify(users));
+  document.getElementById('pointsValue').innerText = user.points;
+  incrementCount(VIDEO_KEY, email);
+  alert(`Video completed! +${VIDEO_POINTS} points`);
+  renderTasks();
+}
+
+    // --- Survey Questions ---
+const allSurveyQuestions = [
+  { q: 'Who is the best footballer?', a: ['Ronaldo', 'Messi', 'Mbappe'] },
+  { q: 'Which is your favorite color?', a: ['Red', 'Blue', 'Green'] },
+  { q: 'What is your preferred device?', a: ['Phone', 'Laptop', 'Tablet'] },
+  { q: 'Which season do you like most?', a: ['Summer', 'Winter', 'Spring'] },
+  { q: 'Favorite sport?', a: ['Football', 'Basketball', 'Tennis'] },
+  { q: 'Best streaming platform?', a: ['Netflix', 'YouTube', 'Amazon Prime'] },
+  { q: 'Preferred social media?', a: ['Instagram', 'Facebook', 'X (Twitter)'] },
+  { q: 'Favorite cuisine?', a: ['Italian', 'Chinese', 'African'] },
+  { q: 'How often do you exercise?', a: ['Daily', 'Weekly', 'Rarely'] },
+  { q: 'Favorite pet?', a: ['Dog', 'Cat', 'Bird'] },
+  { q: 'Best car brand?', a: ['Toyota', 'BMW', 'Tesla'] },
+  { q: 'Favorite movie genre?', a: ['Action', 'Comedy', 'Drama'] },
+  { q: 'How do you commute?', a: ['Car', 'Bike', 'Public Transport'] },
+  { q: 'Favorite drink?', a: ['Water', 'Juice', 'Soda'] },
+  { q: 'Best holiday?', a: ['Christmas', 'Eid', 'New Year'] },
+  { q: 'Preferred news source?', a: ['TV', 'Online', 'Newspaper'] },
+  { q: 'Favorite fruit?', a: ['Apple', 'Banana', 'Orange'] },
+  { q: 'How do you shop?', a: ['Online', 'In-store', 'Both'] },
+  { q: 'Favorite subject?', a: ['Math', 'Science', 'History'] },
+  { q: 'Best time to study?', a: ['Morning', 'Afternoon', 'Night'] },
+  { q: 'Favorite animal?', a: ['Lion', 'Elephant', 'Giraffe'] },
+  { q: 'Favorite city?', a: ['Lagos', 'London', 'New York'] },
+  { q: 'Favorite app?', a: ['WhatsApp', 'Telegram', 'Facebook'] },
+  { q: 'Favorite dessert?', a: ['Cake', 'Ice Cream', 'Pie'] },
+  { q: 'Favorite vegetable?', a: ['Carrot', 'Spinach', 'Tomato'] }
+];
+
+function getTodaysSurveyQuestions(email) {
+  // Use the date and email to seed a pseudo-random selection
+  const today = new Date();
+  const key = 'surveyQs_' + email + '_' + today.getFullYear() + '_' + today.getMonth() + '_' + today.getDate();
+  let questions = JSON.parse(localStorage.getItem(key));
+  if (!questions) {
+    // Shuffle and pick 20
+    let arr = [...allSurveyQuestions];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    questions = arr.slice(0, 20);
+    localStorage.setItem(key, JSON.stringify(questions));
+  }
+  return questions;
+}
+
+function showSurveyModal() {
+  const email = getUserEmail();
+  const surveyQuestions = getTodaysSurveyQuestions(email);
+  let modal = document.getElementById('surveyModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'surveyModal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+    modal.style.background = 'rgba(0,0,0,0.7)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '9999';
+    modal.innerHTML = `<div id="surveyBox" style="background:#fff;padding:30px 20px;border-radius:10px;max-width:400px;width:100%;text-align:left;position:relative;">
+      <span id="closeSurveyModal" style="position:absolute;top:10px;right:15px;cursor:pointer;font-size:22px;">&times;</span>
+      <div id="surveyQ"></div>
+      <div id="surveyA"></div>
+      <button id="nextSurveyQ" class="save-btn" style="margin-top:20px;">Next</button>
+    </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('closeSurveyModal').onclick = () => modal.remove();
+  }
+  let currentQ = 0;
+  let answers = [];
+  function renderQ() {
+    document.getElementById('surveyQ').innerText = (currentQ+1) + '. ' + surveyQuestions[currentQ].q;
+    document.getElementById('surveyA').innerHTML = surveyQuestions[currentQ].a.map((ans, i) =>
+      `<label style='display:block;margin:8px 0;'><input type='radio' name='surveyAns' value='${ans}' ${i===0?'checked':''}/> ${ans}</label>`
+    ).join('');
+    document.getElementById('nextSurveyQ').innerText = currentQ === surveyQuestions.length-1 ? 'Finish' : 'Next';
+  }
+  renderQ();
+  document.getElementById('nextSurveyQ').onclick = function() {
+    const selected = document.querySelector('input[name="surveyAns"]:checked');
+    answers[currentQ] = selected ? selected.value : '';
+    if (currentQ < surveyQuestions.length-1) {
+      currentQ++;
+      renderQ();
+    } else {
+      modal.remove();
+      // Add 100 points to user and update UI
+      const email = getUserEmail();
+      let user = JSON.parse(localStorage.getItem('techg_currentUser'));
+      user.points = (user.points || 0) + 100;
+      localStorage.setItem('techg_currentUser', JSON.stringify(user));
+      let users = JSON.parse(localStorage.getItem('techg_users') || '[]');
+      users = users.map(u => u.email === user.email ? user : u);
+      localStorage.setItem('techg_users', JSON.stringify(users));
+      document.getElementById('pointsValue').innerText = user.points;
+      incrementCount(SURVEY_KEY, email);
+      alert('Survey completed! +100 points');
+      renderTasks();
+    }
+  };
+}
+
+    // --- Withdrawal Logic ---
+const MIN_WITHDRAWAL = 10000;
+function showWithdrawalModal() {
+  let modal = document.getElementById('withdrawalModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'withdrawalModal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+    modal.style.background = 'rgba(0,0,0,0.7)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '9999';
+    modal.innerHTML = `<div style="background:#fff;padding:30px 20px;border-radius:10px;max-width:400px;width:100%;text-align:left;position:relative;">
+      <span id="closeWithdrawalModal" style="position:absolute;top:10px;right:15px;cursor:pointer;font-size:22px;">&times;</span>
+      <h2>Withdrawal Request</h2>
+      <form id="withdrawalForm">
+        <label>Bank Name:<br><input type="text" name="bankName" required style="width:100%;margin-bottom:10px;"></label><br>
+        <label>Account Name:<br><input type="text" name="accountName" required style="width:100%;margin-bottom:10px;"></label><br>
+        <label>Account Number:<br><input type="text" name="accountNumber" required style="width:100%;margin-bottom:10px;"></label><br>
+        <button type="submit" class="save-btn" style="margin-top:10px;">Submit Request</button>
+      </form>
+    </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('closeWithdrawalModal').onclick = () => modal.remove();
+    document.getElementById('withdrawalForm').onsubmit = function(e) {
+      e.preventDefault();
+      alert('Withdrawal request submitted!');
+      modal.remove();
+    };
+  }
+}
+
+    // Add/Update withdrawal button logic
+function renderWithdrawalButton() {
+  let btnHtml = `<button class="save-btn" onclick="showWithdrawalModal()">Request Withdrawal</button>`;
+  document.getElementById('withdrawalBtn').innerHTML = btnHtml;
+}
+
+    // Call renderWithdrawalButton() after points update and on page load
+renderWithdrawalButton();
+  </script>
+</body>
+</html>
+<body class="dashboard-page">
