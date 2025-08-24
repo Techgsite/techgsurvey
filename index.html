@@ -206,7 +206,7 @@
     </div>
   </footer>
 
-  <div class="toast" id="toast" role="alert" aria-live="assertive">Signed up! (Demo) Google login/signup successful.</div>
+  <div class="toast" id="toast" role="alert" aria-live="assertive">Signed up! Google login/signup successful.</div>
 
   <script>
     // Mobile nav
@@ -265,7 +265,7 @@ function handleCredentialResponse(response) {
     saveUsers(users);
     setCurrentUser(user);
   }
-  window.location.href = 'TASKPAGE.HTML';
+  window.location.href = 'taskpage.html';
 }
 // --- Registration and Login Logic ---
 function getUsers() {
@@ -369,7 +369,7 @@ signupForm.addEventListener('submit', async (e) => {
   users.push(user);
   saveUsers(users);
   setCurrentUser(user);
-  window.location.href = 'TASKPAGE.HTML';
+  window.location.href = 'taskpage.html';
 });
 
 // Login
@@ -471,9 +471,9 @@ document.getElementById('forgotForm').onsubmit = function(e) {
     return;
   }
   // Demo: Show message (real email requires backend)
-  document.getElementById('forgotMsg').textContent = 'A reset link would be sent to your email (demo).';
+  document.getElementById('forgotMsg').textContent = 'A reset link would be sent to your email .';
 };
-// 3. Email verification for signup/forgot password (demo):
+// 3. Email verification for signup/forgot password :
 // On signup, after user submits, show a message: 'A verification email would be sent to your email (demo)'.
 // 4. Survey 24h lockout is already enforced in TASKPAGE.HTML using localStorage timestamp per user.
   </script>
@@ -481,4 +481,5 @@ document.getElementById('forgotForm').onsubmit = function(e) {
 </body>
 
 </html>
+
 
